@@ -321,10 +321,12 @@ async function carregarTaxonomia() {
 function montarChipsHoje() {
   chips($("chips-ocasiao"), OCASIOES, estado.ocasiao, (v) => {
     estado.ocasiao = v;
+    estado.recusadas = []; // outra ocasião, outra chance para as peças
     montarChipsHoje();
   });
   chips($("chips-conforto"), CONFORTOS, estado.conforto, (v) => {
     estado.conforto = v;
+    estado.recusadas = [];
     montarChipsHoje();
   });
 }
@@ -376,6 +378,7 @@ $("gerar-look").onclick = async () => {
         conforto: estado.conforto,
         cidade: estado.perfil?.cidade || "",
         quantidade: 2,
+        evitar: estado.recusadas || [],
       }),
     });
     const dados = await resposta.json();
@@ -425,6 +428,11 @@ function mostrarSugestoes(dados) {
         class: "secundario",
         texto: "Só salvar",
         onclick: (e) => salvarSugestao(s, e.target),
+      }),
+      elemento("button", {
+        class: "discreto",
+        texto: "Não curti",
+        onclick: () => recusarSugestao(s),
       }),
     ]);
 
@@ -480,6 +488,58 @@ async function usarSugestao(s, botao) {
   } finally {
     botao.disabled = false;
   }
+}
+
+/* Saber POR QUE a sugestão não serviu é o dado mais valioso do piloto.
+   O motivo fica gravado e a peça recusada sai da próxima tentativa. */
+const MOTIVOS = [
+  ["ocasiao", "Não combina com a ocasião"],
+  ["clima", "Não combina com o clima"],
+  ["conforto", "Não é confortável"],
+  ["estilo", "Não é o meu estilo"],
+  ["cores", "As cores não combinam"],
+  ["repetido", "Já usei isso há pouco"],
+];
+
+function recusarSugestao(s) {
+  $("simples-titulo").textContent = "O que não funcionou?";
+  const corpo = $("simples-corpo");
+  corpo.replaceChildren(
+    elemento("p", { class: "muted", texto: "Sua resposta ajusta as próximas sugestões." }),
+  );
+
+  const lista = elemento("div", { class: "pilha" });
+  for (const [chave, rotulo] of MOTIVOS) {
+    lista.append(elemento("button", {
+      class: "item",
+      type: "button",
+      texto: rotulo,
+      onclick: async () => {
+        try {
+          const { data: sessao } = await sb.auth.getUser();
+          await sb.from("vesty_feedback").insert({
+            dona_id: sessao.user.id,
+            aceito: false,
+            motivo: chave,
+            contexto: {
+              ocasiao: estado.ocasiao,
+              conforto: estado.conforto,
+              pecas: s.pecas.map((p) => ({ id: p.id, nome: p.nome, papel: p.papel })),
+              explicacao: s.explicacao_tecnica || s.explicacao,
+            },
+          });
+        } catch { /* o feedback não pode atrapalhar a experiência dela */ }
+
+        $("dialogo-simples").close();
+        recado("Obrigada. Vou tentar outra combinação.");
+        // Peças recusadas saem da próxima rodada.
+        estado.recusadas = [...new Set([...(estado.recusadas || []), ...s.pecas.map((p) => p.id)])];
+        $("gerar-look").click();
+      },
+    }));
+  }
+  corpo.append(lista);
+  $("dialogo-simples").showModal();
 }
 
 async function carregarResumo() {
