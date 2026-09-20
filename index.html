@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#482c40">
+<meta name="description" content="Vesty Aí — seu guarda-roupa. Novas possibilidades.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Vesty Aí">
+<title>Vesty Aí · Seu guarda-roupa</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- ======================= ENTRADA ======================= -->
+<section id="entrada">
+  <div class="marca">
+    <h1>Vesty Aí</h1>
+    <p>Seu guarda-roupa. Novas possibilidades.</p>
+  </div>
+
+  <div class="cartao">
+    <h2 id="entrada-titulo">Bem-vinda de volta</h2>
+    <p class="muted" id="entrada-texto" style="margin-bottom:18px">Entre para ver seu guarda-roupa.</p>
+
+    <form id="form-entrada">
+      <label id="campo-nome" hidden>Como podemos te chamar?
+        <input id="nome" maxlength="120" autocomplete="name" placeholder="Seu nome">
+      </label>
+      <label>E-mail
+        <input id="email" type="email" required maxlength="254" autocomplete="username" placeholder="voce@exemplo.com">
+      </label>
+      <label>Senha
+        <input id="senha" type="password" required minlength="8" maxlength="128" autocomplete="current-password" placeholder="Mínimo 8 caracteres">
+      </label>
+      <p id="entrada-alerta" class="alerta" hidden role="alert"></p>
+      <button type="submit" id="entrada-enviar" class="largo">Entrar</button>
+    </form>
+
+    <div class="center" style="margin-top:14px">
+      <button type="button" class="discreto" id="alternar-modo">Ainda não tenho conta</button>
+    </div>
+  </div>
+
+  <p class="aviso-teste">
+    Versão em piloto. Suas fotos ficam em armazenamento privado e só você tem acesso.
+    Você pode exportar ou apagar tudo quando quiser.
+  </p>
+</section>
+
+<!-- ======================= HOJE ======================= -->
+<main id="app" hidden>
+
+<section class="tela" id="tela-hoje" hidden>
+  <div class="topo">
+    <div>
+      <p class="eyebrow">Hoje</p>
+      <h1 id="saudacao">Meu look de hoje</h1>
+    </div>
+    <button class="discreto" id="ir-conta" aria-label="Minha conta">Conta</button>
+  </div>
+
+  <div class="contexto" id="clima-caixa">
+    <span id="clima-texto">Informe sua cidade para ver a previsão</span>
+  </div>
+
+  <div class="secao">
+    <p class="eyebrow">Para onde você vai?</p>
+    <div class="chips" id="chips-ocasiao" role="group" aria-label="Ocasião"></div>
+    <p class="eyebrow" style="margin-top:6px">Como quer se sentir?</p>
+    <div class="chips" id="chips-conforto" role="group" aria-label="Conforto"></div>
+    <button class="largo" id="gerar-look" style="margin-top:8px">Montar meu look</button>
+  </div>
+
+  <div id="sugestoes"></div>
+
+  <div class="secao">
+    <h2>Atalhos</h2>
+    <div class="pilha">
+      <button class="item" id="atalho-peca">
+        <span class="numero">+</span>
+        <span class="corpo">
+          <span class="titulo">Adicionar peça</span>
+          <span class="detalhe">Fotografe e organize em segundos</span>
+        </span>
+      </button>
+      <button class="item" id="atalho-loja">
+        <span class="numero">?</span>
+        <span class="corpo">
+          <span class="titulo">Conferir na loja</span>
+          <span class="detalhe">Veja se combina antes de comprar</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="secao" id="resumo-hoje"></div>
+</section>
+
+<!-- ======================= CLOSET ======================= -->
+<section class="tela" id="tela-closet" hidden>
+  <div class="topo">
+    <div>
+      <p class="eyebrow">Closet</p>
+      <h1>Meu guarda-roupa</h1>
+    </div>
+    <button class="pequeno" id="nova-peca">+ Peça</button>
+  </div>
+
+  <label style="margin-bottom:10px">
+    <input type="search" id="busca" placeholder="Buscar por nome, marca ou cor" aria-label="Buscar peça">
+  </label>
+
+  <div class="chips" id="chips-categoria" role="group" aria-label="Categoria"></div>
+  <div class="chips" id="chips-estado" role="group" aria-label="Disponibilidade"></div>
+
+  <p class="muted" id="contagem"></p>
+  <div class="grade" id="grade-pecas"></div>
+  <div class="center" style="margin-top:18px">
+    <button class="secundario" id="carregar-mais" hidden>Ver mais peças</button>
+  </div>
+</section>
+
+<!-- ======================= LOOKS ======================= -->
+<section class="tela" id="tela-looks" hidden>
+  <div class="topo">
+    <div>
+      <p class="eyebrow">Looks</p>
+      <h1>Minhas combinações</h1>
+    </div>
+    <button class="pequeno" id="novo-look">+ Montar</button>
+  </div>
+
+  <div class="chips" id="chips-looks" role="group" aria-label="Seção de looks"></div>
+
+  <div id="painel-salvos">
+    <div class="pilha" id="lista-looks"></div>
+  </div>
+
+  <div id="painel-agenda" hidden>
+    <p class="muted">Planejar um look para um dia não conta como uso. O registro só acontece quando você confirma que vestiu.</p>
+    <div class="pilha" id="lista-agenda"></div>
+    <button class="secundario largo" id="novo-compromisso" style="margin-top:14px">+ Planejar um dia</button>
+  </div>
+
+  <div id="painel-viagem" hidden>
+    <p class="muted">Uma peça usada em vários looks aparece só uma vez na lista da mala.</p>
+    <div class="pilha" id="lista-viagens"></div>
+    <button class="secundario largo" id="nova-viagem" style="margin-top:14px">+ Planejar viagem</button>
+  </div>
+</section>
+
+<!-- ======================= ASSISTENTE ======================= -->
+<section class="tela" id="tela-assistente" hidden>
+  <div class="topo">
+    <div>
+      <p class="eyebrow">Assistente</p>
+      <h1>Vesty</h1>
+    </div>
+  </div>
+
+  <div class="conversa" id="conversa"></div>
+
+  <div class="chips" id="sugestoes-pergunta" role="group" aria-label="Perguntas rápidas"></div>
+
+  <form id="form-pergunta" class="pergunta">
+    <input id="pergunta" maxlength="200" placeholder="Pergunte alguma coisa…" aria-label="Sua pergunta"
+           autocomplete="off">
+    <button type="submit" id="enviar-pergunta" aria-label="Enviar">Enviar</button>
+  </form>
+
+  <div class="secao">
+    <h2>O que eu lembro de você</h2>
+    <p class="muted">Tudo aqui é editável. Você corrige ou apaga quando quiser.</p>
+    <div class="cartao" style="margin-top:12px" id="memoria"></div>
+    <button class="secundario largo" id="nova-memoria" style="margin-top:12px">+ Ensinar uma preferência</button>
+  </div>
+
+  <div class="secao">
+    <h2>Suas peças em números</h2>
+    <p class="muted">Custo por uso só aparece quando você informou o preço.</p>
+    <div id="estatisticas"></div>
+  </div>
+
+  <div class="secao">
+    <h2>Seus dados</h2>
+    <div class="pilha">
+      <button class="item" id="ir-perfil">
+        <span class="corpo"><span class="titulo">Meu perfil</span><span class="detalhe">Nome, cidade e estilo</span></span>
+      </button>
+      <button class="item" id="exportar">
+        <span class="corpo"><span class="titulo">Exportar meus dados</span><span class="detalhe">Baixar tudo em um arquivo</span></span>
+      </button>
+      <button class="item" id="sair">
+        <span class="corpo"><span class="titulo">Sair da conta</span><span class="detalhe" id="email-atual"></span></span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<nav class="navegacao" aria-label="Navegação principal">
+  <button data-aba="hoje" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>
+    Hoje
+  </button>
+  <button data-aba="closet">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a2 2 0 0 0 0 4c1 0 1.2.6.4 1.1L3 14v5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-5l-9.4-5.9" stroke-linejoin="round"/></svg>
+    Closet
+  </button>
+  <button data-aba="looks">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 9 5-9 5-9-5z" stroke-linejoin="round"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5" stroke-linejoin="round"/></svg>
+    Looks
+  </button>
+  <button data-aba="assistente">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 1 1-3.5-6.6" stroke-linecap="round"/><path d="M8 11h.01M12 11h.01M16 11h.01M4.5 19.5 3 21l.6-3.4" stroke-linecap="round"/></svg>
+    Assistente
+  </button>
+</nav>
+
+</main>
+
+<!-- ======================= DIÁLOGO: PEÇA ======================= -->
+<dialog id="dialogo-peca">
+  <div class="folha">
+    <div class="puxador"></div>
+    <div class="folha-topo">
+      <h2 id="peca-titulo">Nova peça</h2>
+      <button class="discreto" data-fechar="dialogo-peca">Fechar</button>
+    </div>
+
+    <div class="foto-area" id="peca-foto-area">
+      <p class="instrucao" id="peca-instrucao">
+        Fotografe a peça sobre um fundo neutro.<br>
+        <span class="muted">A foto fica privada, só você vê.</span>
+      </p>
+      <img id="peca-foto" hidden alt="">
+    </div>
+    <div class="botoes-foto">
+      <button type="button" id="tirar-foto">Fotografar</button>
+      <button type="button" class="secundario" id="escolher-foto">Galeria</button>
+    </div>
+    <input type="file" id="arquivo-camera" accept="image/*" capture="environment">
+    <input type="file" id="arquivo-galeria" accept="image/*">
+
+    <form id="form-peca">
+      <label>Nome da peça
+        <input name="nome" required maxlength="160" placeholder="Ex.: Camisa de linho creme">
+      </label>
+      <div class="linha-dupla">
+        <label>Categoria
+          <select name="categoria" id="peca-categoria" required></select>
+        </label>
+        <label>Subcategoria
+          <select name="subcategoria" id="peca-subcategoria" required></select>
+        </label>
+        <label>Cor
+          <input name="cor" maxlength="60" placeholder="Creme" list="cores">
+        </label>
+        <label>Estampa
+          <input name="estampa" maxlength="60" placeholder="Lisa, listrada…">
+        </label>
+        <label>Marca
+          <input name="marca" maxlength="80" placeholder="Opcional">
+        </label>
+        <label>Tamanho
+          <input name="tamanho" maxlength="40" placeholder="Como está na etiqueta">
+        </label>
+        <label>Disponibilidade
+          <select name="estado" id="peca-estado"></select>
+        </label>
+        <label>Preço pago (R$)
+          <input name="preco" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Opcional">
+        </label>
+      </div>
+
+      <label>Para quais ocasiões?
+        <span class="chips" id="peca-ocasioes" role="group"></span>
+      </label>
+      <label>Combina com qual clima?
+        <span class="chips" id="peca-clima" role="group"></span>
+      </label>
+
+      <label>Observações
+        <textarea name="notas" maxlength="2000" rows="2" placeholder="Cuidados de lavagem, ajustes, onde está guardada"></textarea>
+      </label>
+
+      <label style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" name="favorita" style="width:auto;min-height:0;margin:0">
+        <span>Marcar como favorita</span>
+      </label>
+
+      <p id="peca-alerta" class="alerta" hidden role="alert"></p>
+
+      <div class="rodape-fixo">
+        <div class="acoes">
+          <button type="button" class="perigo" id="excluir-peca" hidden>Excluir</button>
+          <button type="submit" id="salvar-peca">Salvar peça</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<datalist id="cores">
+  <option>Preto</option><option>Branco</option><option>Bege</option><option>Creme</option>
+  <option>Cinza</option><option>Marinho</option><option>Jeans</option><option>Marrom</option>
+  <option>Vermelho</option><option>Rosa</option><option>Verde</option><option>Azul</option>
+  <option>Amarelo</option><option>Vinho</option><option>Laranja</option><option>Roxo</option>
+</datalist>
+
+<!-- ======================= DIÁLOGO: MONTAR LOOK ======================= -->
+<dialog id="dialogo-look">
+  <div class="folha">
+    <div class="puxador"></div>
+    <div class="folha-topo">
+      <h2>Montar meu look</h2>
+      <button class="discreto" data-fechar="dialogo-look">Fechar</button>
+    </div>
+    <p class="muted" id="look-contagem">Toque nas peças que você quer usar.</p>
+    <div class="chips" id="look-filtro" role="group" aria-label="Filtrar por categoria"></div>
+    <div class="grade" id="look-grade"></div>
+    <div class="rodape-fixo">
+      <label>Nome do look
+        <input id="look-nome" maxlength="120" placeholder="Ex.: Reunião de segunda">
+      </label>
+      <p id="look-alerta" class="alerta" hidden role="alert"></p>
+      <button class="largo" id="salvar-look">Salvar combinação</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ======================= DIÁLOGO: CONFERIR NA LOJA ======================= -->
+<dialog id="dialogo-loja">
+  <div class="folha">
+    <div class="puxador"></div>
+    <div class="folha-topo">
+      <h2>Conferir na loja</h2>
+      <button class="discreto" data-fechar="dialogo-loja">Fechar</button>
+    </div>
+    <p class="muted">Esta peça fica como consulta. Ela só entra no seu guarda-roupa se você confirmar a compra.</p>
+
+    <div class="foto-area" id="loja-foto-area" style="margin-top:14px">
+      <p class="instrucao">Fotografe a peça que você está pensando em levar.</p>
+      <img id="loja-foto" hidden alt="">
+    </div>
+    <div class="botoes-foto">
+      <button type="button" id="loja-tirar">Fotografar</button>
+      <button type="button" class="secundario" id="loja-galeria">Galeria</button>
+    </div>
+    <input type="file" id="loja-arquivo-camera" accept="image/*" capture="environment">
+    <input type="file" id="loja-arquivo-galeria" accept="image/*">
+
+    <form id="form-loja">
+      <div class="linha-dupla">
+        <label>Categoria
+          <select name="categoria" id="loja-categoria" required></select>
+        </label>
+        <label>Subcategoria
+          <select name="subcategoria" id="loja-subcategoria" required></select>
+        </label>
+        <label>Cor
+          <input name="cor" maxlength="60" placeholder="Cor principal" list="cores">
+        </label>
+        <label>Preço (R$)
+          <input name="preco" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Opcional">
+        </label>
+      </div>
+      <label>Loja
+        <input name="loja" maxlength="120" placeholder="Opcional">
+      </label>
+      <p id="loja-alerta" class="alerta" hidden role="alert"></p>
+      <button type="submit" class="largo">Analisar peça</button>
+    </form>
+
+    <div id="loja-resultado"></div>
+  </div>
+</dialog>
+
+<!-- ======================= DIÁLOGO: GENÉRICO ======================= -->
+<dialog id="dialogo-simples">
+  <div class="folha">
+    <div class="puxador"></div>
+    <div class="folha-topo">
+      <h2 id="simples-titulo"></h2>
+      <button class="discreto" data-fechar="dialogo-simples">Fechar</button>
+    </div>
+    <div id="simples-corpo"></div>
+  </div>
+</dialog>
+
+<script src="config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

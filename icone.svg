@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Vesty Aí">
+  <rect width="512" height="512" rx="114" fill="#482c40"/>
+  <!-- V da marca: traço marfim com a dobra interna em rosa, como no logotipo. -->
+  <path d="M132 150h74l50 152 50-152h74L294 386h-76z" fill="#f7f3ee"/>
+  <path d="M256 302l38-116h74l-60 128z" fill="#cfa9a2"/>
+</svg>

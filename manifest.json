@@ -1,0 +1,24 @@
+{
+  "name": "Vesty Aí — Seu guarda-roupa",
+  "short_name": "Vesty Aí",
+  "description": "Organize suas peças, monte looks com o que você já tem e confira antes de comprar.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f3ee",
+  "theme_color": "#482c40",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["lifestyle", "shopping", "productivity"],
+  "icons": [
+    { "src": "icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icone-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Adicionar peça", "short_name": "Nova peça", "url": "./index.html?acao=peca" },
+    { "name": "Conferir na loja", "short_name": "Na loja", "url": "./index.html?acao=loja" }
+  ]
+}
