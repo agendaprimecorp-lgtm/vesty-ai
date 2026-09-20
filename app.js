@@ -288,8 +288,7 @@ async function iniciarSessao() {
 
   const { data: perfil } = await sb.from("vesty_perfis").select("*").eq("id", data.user.id).maybeSingle();
   estado.perfil = perfil || { nome: "", cidade: "" };
-  const primeiro = (estado.perfil.nome || "").split(" ")[0];
-  $("saudacao").textContent = primeiro ? `Bom dia, ${primeiro}` : "Meu look de hoje";
+  atualizarSaudacao();
 
   montarChipsHoje();
   montarChipsCloset();
@@ -304,6 +303,14 @@ async function iniciarSessao() {
       recado("Cadastre sua cidade no Assistente para eu considerar o clima.");
     }, 1500);
   }
+}
+
+// Muita gente escolhe a roupa à noite, para o dia seguinte.
+function atualizarSaudacao() {
+  const hora = new Date().getHours();
+  const periodo = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+  const primeiro = (estado.perfil?.nome || "").split(" ")[0];
+  $("saudacao").textContent = primeiro ? `${periodo}, ${primeiro}` : "Meu look de hoje";
 }
 
 async function carregarTaxonomia() {
@@ -481,7 +488,7 @@ async function usarSugestao(s, botao) {
     const lookId = await criarLookDaSugestao(s, `${(OCASIOES.find((o) => o[0] === estado.ocasiao) || [])[1]} · ${dataBR(new Date().toISOString().slice(0, 10))}`);
     const { error } = await sb.rpc("vesty_registrar_uso", { p_look: lookId });
     if (error) throw new Error(error.message);
-    recado("Uso registrado. Bom dia!");
+    recado("Uso registrado. Aproveite o dia!");
     carregarResumo();
   } catch (erro) {
     recado(erro.message, "erro");
@@ -1727,8 +1734,7 @@ $("ir-perfil").onclick = async () => {
     const { error } = await sb.from("vesty_perfis").update(valores).eq("id", sessao.user.id);
     if (error) { recado(error.message, "erro"); return; }
     Object.assign(estado.perfil, valores);
-    const primeiro = valores.nome.split(" ")[0];
-    $("saudacao").textContent = primeiro ? `Bom dia, ${primeiro}` : "Meu look de hoje";
+    atualizarSaudacao();
     $("dialogo-simples").close();
     atualizarClima();
     recado("Perfil atualizado.");
