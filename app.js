@@ -1912,26 +1912,132 @@ $("exportar").onclick = async () => {
 $("ir-perfil").onclick = async () => {
   $("simples-titulo").textContent = "Meu perfil";
   const form = elemento("form", {});
+
+  const CORES = ["Rosa", "Vermelho", "Laranja", "Amarelo", "Verde", "Azul", "Roxo", "Marrom", "Cinza", "Preto", "Branco", "Bege"];
+  const TIPOS_ROUPA = ["Camisetas", "Blusas", "Camisas", "Vestidos", "Calças", "Shorts", "Saias", "Jaquetas", "Casacos", "Suéteres", "Leggings", "Jeans"];
+  const ESTILOS = ["Casual", "Clássico", "Esportivo", "Elegante", "Boho", "Romântico", "Gótico", "Minimalista", "Vintage", "Moderno", "Feminino", "Masculino"];
+  const COMPRIMENTO_CABELO = ["Muito curto", "Curto", "Médio", "Longo", "Muito longo"];
+  const TOM_PELE = ["Muito claro", "Claro", "Médio", "Escuro", "Muito escuro"];
+  const ORCAMENTO = ["Até R$ 50", "R$ 50-100", "R$ 100-200", "R$ 200-500", "Acima de R$ 500"];
+
+  const perfil = estado.perfil || {};
+  const coresSelecionadas = (perfil.cores_favoritas || "").split(",").filter(Boolean);
+  const tiposSelecionados = (perfil.tipos_roupa || "").split(",").filter(Boolean);
+  const estilosSelecionados = (perfil.estilos || "").split(",").filter(Boolean);
+
   form.innerHTML = `
-    <label>Nome<input name="nome" maxlength="120"></label>
-    <label>Cidade<input name="cidade" maxlength="80" placeholder="Para a previsão do tempo"></label>
-    <small>A cidade é usada só para consultar a previsão. Você pode apagar quando quiser.</small>
-    <button type="submit" class="largo" style="margin-top:16px">Salvar</button>
+    <div style="max-height:70vh; overflow-y:auto; padding-right:8px">
+      <h3 style="margin:0 0 14px 0; font-size:16px; color:var(--ameixa)">Informações básicas</h3>
+      <label>Nome completo<input name="nome" maxlength="120" required></label>
+      <label>Gênero<input name="sexo" maxlength="30" readonly></label>
+      <label>Idade<input name="idade" type="number" readonly></label>
+      <label>Cidade<input name="cidade" maxlength="80" placeholder="Para a previsão do tempo"></label>
+
+      <h3 style="margin:20px 0 14px 0; font-size:16px; color:var(--ameixa)">Suas preferências</h3>
+
+      <label style="display:block; margin-bottom:8px; font-size:13px">Cores favoritas</label>
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px" id="cores-chips"></div>
+
+      <label style="display:block; margin-bottom:8px; font-size:13px">Tipos de roupa que mais usa</label>
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px" id="tipos-chips"></div>
+
+      <label style="display:block; margin-bottom:8px; font-size:13px">Estilos que te atraem</label>
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:16px" id="estilos-chips"></div>
+
+      <label>Comprimento de cabelo
+        <select name="cabelo">
+          <option value="">Selecione...</option>
+          ${COMPRIMENTO_CABELO.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>
+      </label>
+
+      <label>Tom de pele
+        <select name="tom_pele">
+          <option value="">Selecione...</option>
+          ${TOM_PELE.map(t => `<option value="${t}">${t}</option>`).join("")}
+        </select>
+      </label>
+
+      <label>Orçamento médio por peça
+        <select name="orcamento">
+          <option value="">Selecione...</option>
+          ${ORCAMENTO.map(o => `<option value="${o}">${o}</option>`).join("")}
+        </select>
+      </label>
+
+      <label>Algo mais que você gostaria de nos contar?
+        <textarea name="notas" maxlength="500" placeholder="Preferências, restrições, inspirações..."></textarea>
+      </label>
+
+      <small style="color:var(--suave); display:block; margin-top:12px">Suas informações ficam privadas e ajudam a personalizar os looks sugeridos. Você pode atualizar quando quiser.</small>
+    </div>
+    <button type="submit" class="largo" style="margin-top:16px">Salvar perfil</button>
   `;
-  form.nome.value = estado.perfil?.nome || "";
-  form.cidade.value = estado.perfil?.cidade || "";
+
+  form.nome.value = perfil?.nome || "";
+  form.sexo.value = perfil?.sexo || "";
+  form.idade.value = perfil?.idade || "";
+  form.cidade.value = perfil?.cidade || "";
+  form.cabelo.value = perfil?.comprimento_cabelo || "";
+  form.tom_pele.value = perfil?.tom_pele || "";
+  form.orcamento.value = perfil?.orcamento || "";
+  form.notas.value = perfil?.notas || "";
+
+  const coresDiv = form.querySelector("#cores-chips");
+  CORES.forEach(cor => {
+    const chip = elemento("button", { type: "button", class: "chip-toggle" });
+    chip.textContent = cor;
+    if (coresSelecionadas.includes(cor)) chip.classList.add("ativo");
+    chip.onclick = (e) => { e.preventDefault(); chip.classList.toggle("ativo"); };
+    coresDiv.append(chip);
+  });
+
+  const tiposDiv = form.querySelector("#tipos-chips");
+  TIPOS_ROUPA.forEach(tipo => {
+    const chip = elemento("button", { type: "button", class: "chip-toggle" });
+    chip.textContent = tipo;
+    if (tiposSelecionados.includes(tipo)) chip.classList.add("ativo");
+    chip.onclick = (e) => { e.preventDefault(); chip.classList.toggle("ativo"); };
+    tiposDiv.append(chip);
+  });
+
+  const estilosDiv = form.querySelector("#estilos-chips");
+  ESTILOS.forEach(estilo => {
+    const chip = elemento("button", { type: "button", class: "chip-toggle" });
+    chip.textContent = estilo;
+    if (estilosSelecionados.includes(estilo)) chip.classList.add("ativo");
+    chip.onclick = (e) => { e.preventDefault(); chip.classList.toggle("ativo"); };
+    estilosDiv.append(chip);
+  });
 
   form.onsubmit = async (e) => {
     e.preventDefault();
+    if (!form.nome.value.trim()) { recado("Informe seu nome", "atencao"); return; }
+
     const { data: sessao } = await sb.auth.getUser();
-    const valores = { nome: form.nome.value.trim(), cidade: form.cidade.value.trim() };
+    const coresAtivas = Array.from(form.querySelector("#cores-chips").querySelectorAll(".ativo")).map(el => el.textContent).join(",");
+    const tiposAtivos = Array.from(form.querySelector("#tipos-chips").querySelectorAll(".ativo")).map(el => el.textContent).join(",");
+    const estilosAtivos = Array.from(form.querySelector("#estilos-chips").querySelectorAll(".ativo")).map(el => el.textContent).join(",");
+
+    const valores = {
+      nome: form.nome.value.trim(),
+      cidade: form.cidade.value.trim(),
+      cores_favoritas: coresAtivas,
+      tipos_roupa: tiposAtivos,
+      estilos: estilosAtivos,
+      comprimento_cabelo: form.cabelo.value,
+      tom_pele: form.tom_pele.value,
+      orcamento: form.orcamento.value,
+      notas: form.notas.value.trim(),
+    };
+
     const { error } = await sb.from("vesty_perfis").update(valores).eq("id", sessao.user.id);
     if (error) { recado(error.message, "erro"); return; }
     Object.assign(estado.perfil, valores);
     atualizarSaudacao();
     $("dialogo-simples").close();
     atualizarClima();
-    recado("Perfil atualizado.");
+    recado("Perfil atualizado com sucesso!");
   };
 
   $("simples-corpo").replaceChildren(form);
