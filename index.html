@@ -187,6 +187,19 @@
   </div>
 
   <div class="secao">
+    <h2>Ajude a melhorar</h2>
+    <p class="muted">Este aplicativo está em teste. O que te incomodou? O que faltou?</p>
+    <div class="pilha">
+      <button class="item" id="enviar-sugestao">
+        <span class="corpo">
+          <span class="titulo">Mandar minha opinião</span>
+          <span class="detalhe">Vai direto para quem está construindo o app</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="secao">
     <h2>Seus dados</h2>
     <div class="pilha">
       <button class="item" id="ir-perfil">
@@ -247,59 +260,73 @@
     <input type="file" id="arquivo-galeria" accept="image/*">
 
     <form id="form-peca">
-      <label>Nome da peça
-        <input name="nome" required maxlength="160" placeholder="Ex.: Camisa de linho creme">
-      </label>
+      <!-- Só três escolhas para guardar uma peça. O resto é opcional e fica
+           recolhido, para o cadastro não cansar em quinze peças seguidas. -->
       <div class="linha-dupla">
-        <label>Categoria
+        <label>O que é?
           <select name="categoria" id="peca-categoria" required></select>
         </label>
-        <label>Subcategoria
+        <label>Tipo
           <select name="subcategoria" id="peca-subcategoria" required></select>
-        </label>
-        <label>Cor
-          <input name="cor" maxlength="60" placeholder="Creme" list="cores">
-        </label>
-        <label>Estampa
-          <input name="estampa" maxlength="60" placeholder="Lisa, listrada…">
-        </label>
-        <label>Marca
-          <input name="marca" maxlength="80" placeholder="Opcional">
-        </label>
-        <label>Tamanho
-          <input name="tamanho" maxlength="40" placeholder="Como está na etiqueta">
-        </label>
-        <label>Disponibilidade
-          <select name="estado" id="peca-estado"></select>
-        </label>
-        <label>Preço pago (R$)
-          <input name="preco" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Opcional">
         </label>
       </div>
 
-      <label>Para quais ocasiões?
-        <span class="chips" id="peca-ocasioes" role="group"></span>
-      </label>
-      <label>Combina com qual clima?
-        <span class="chips" id="peca-clima" role="group"></span>
+      <label>Cor principal
+        <input name="cor" maxlength="60" placeholder="Ex.: Creme" list="cores" autocomplete="off">
       </label>
 
-      <label>Observações
-        <textarea name="notas" maxlength="2000" rows="2" placeholder="Cuidados de lavagem, ajustes, onde está guardada"></textarea>
+      <label>Como você chama essa peça?
+        <input name="nome" required maxlength="160" autocomplete="off">
+        <small>Preenchi para você. Troque se preferir outro nome.</small>
       </label>
 
-      <label style="display:flex;align-items:center;gap:10px">
-        <input type="checkbox" name="favorita" style="width:auto;min-height:0;margin:0">
-        <span>Marcar como favorita</span>
-      </label>
+      <details id="mais-detalhes">
+        <summary>Mais detalhes — marca, tamanho, preço, ocasiões</summary>
+        <div class="detalhes-corpo">
+          <div class="linha-dupla">
+            <label>Marca
+              <input name="marca" maxlength="80" placeholder="Opcional">
+            </label>
+            <label>Tamanho
+              <input name="tamanho" maxlength="40" placeholder="Como está na etiqueta">
+            </label>
+            <label>Estampa
+              <input name="estampa" maxlength="60" placeholder="Lisa, listrada…">
+            </label>
+            <label>Preço pago (R$)
+              <input name="preco" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Opcional">
+            </label>
+          </div>
 
-      <p id="peca-alerta" class="alerta" hidden role="alert"></p>
+          <label>Disponibilidade
+            <select name="estado" id="peca-estado"></select>
+          </label>
+
+          <label>Para quais ocasiões?
+            <span class="chips" id="peca-ocasioes" role="group"></span>
+          </label>
+          <label>Combina com qual clima?
+            <span class="chips" id="peca-clima" role="group"></span>
+          </label>
+
+          <label>Observações
+            <textarea name="notas" maxlength="2000" rows="2" placeholder="Cuidados de lavagem, ajustes, onde está guardada"></textarea>
+          </label>
+
+          <label style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" name="favorita" style="width:auto;min-height:0;margin:0">
+            <span>Marcar como favorita</span>
+          </label>
+        </div>
+      </details>
 
       <div class="rodape-fixo">
+        <p id="peca-alerta" class="alerta" hidden role="alert"></p>
         <div class="acoes">
-          <button type="button" class="perigo" id="excluir-peca" hidden>Excluir</button>
-          <button type="submit" id="salvar-peca">Salvar peça</button>
+          <button type="submit" id="salvar-peca">Salvar</button>
+          <button type="button" class="secundario" id="salvar-e-outra">Salvar e adicionar outra</button>
         </div>
+        <button type="button" class="perigo largo" id="excluir-peca" hidden style="margin-top:10px">Excluir peça</button>
       </div>
     </form>
   </div>

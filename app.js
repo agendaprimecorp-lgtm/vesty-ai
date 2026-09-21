@@ -75,6 +75,10 @@ const dinheiro = (centavos) =>
 
 const inicial = (texto) => (texto || "?").trim().charAt(0).toUpperCase();
 
+// Mesma normalização que o banco faz na coluna de busca.
+const semAcento = (t) =>
+  (t || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
 // Peça ainda sem foto: um desenho da categoria informa mais que a inicial do
 // nome, que se repete demais (três peças "B" na mesma tela).
 const DESENHOS = {
@@ -298,11 +302,62 @@ async function iniciarSessao() {
   atualizarClima();
   saudacaoAssistente();
 
-  if (!estado.perfil.cidade) {
+  if (!estado.perfil.onboarding_concluido) {
+    setTimeout(darBoasVindas, 700);
+  } else if (!estado.perfil.cidade) {
     setTimeout(() => {
       recado("Cadastre sua cidade no Assistente para eu considerar o clima.");
     }, 1500);
   }
+}
+
+/* Primeira vez: explicar em três linhas o que fazer e já pedir a cidade,
+   que é o dado que destrava a previsão do tempo nas sugestões. */
+function darBoasVindas() {
+  $("simples-titulo").textContent = "Bem-vinda ao Vesty Aí";
+  const form = elemento("form", {});
+  form.innerHTML = `
+    <p class="muted" style="margin-bottom:16px">
+      Eu monto looks com as roupas que <strong>você já tem</strong>. Funciona assim:
+    </p>
+    <div class="pilha" style="margin-bottom:18px">
+      <div class="item"><span class="numero">1</span><span class="corpo">
+        <span class="titulo">Fotografe suas peças</span>
+        <span class="detalhe">Comece pelas 10 que você mais usa</span></span></div>
+      <div class="item"><span class="numero">2</span><span class="corpo">
+        <span class="titulo">Peça um look</span>
+        <span class="detalhe">Eu considero a ocasião e o tempo na sua cidade</span></span></div>
+      <div class="item"><span class="numero">3</span><span class="corpo">
+        <span class="titulo">Diga o que achou</span>
+        <span class="detalhe">Acertando ou não, sua resposta me ensina</span></span></div>
+    </div>
+    <label>Em que cidade você está?
+      <input name="cidade" maxlength="80" placeholder="Ex.: Belo Horizonte" autocomplete="address-level2">
+      <small>Só para a previsão do tempo. Dá para mudar ou apagar depois.</small>
+    </label>
+    <button type="submit" class="largo" style="margin-top:16px">Cadastrar minha primeira peça</button>
+    <div class="center"><button type="button" class="discreto" id="ver-depois">Ver depois</button></div>
+  `;
+
+  const concluir = async (abrirCadastro) => {
+    const cidade = form.cidade.value.trim();
+    try {
+      const { data: sessao } = await sb.auth.getUser();
+      const valores = { onboarding_concluido: true };
+      if (cidade) valores.cidade = cidade;
+      await sb.from("vesty_perfis").update(valores).eq("id", sessao.user.id);
+      Object.assign(estado.perfil, valores);
+      if (cidade) atualizarClima();
+    } catch { /* não travar a entrada dela por causa disto */ }
+    $("dialogo-simples").close();
+    if (abrirCadastro) abrirPeca();
+  };
+
+  form.onsubmit = (e) => { e.preventDefault(); concluir(true); };
+  form.querySelector("#ver-depois").onclick = () => concluir(false);
+
+  $("simples-corpo").replaceChildren(form);
+  $("dialogo-simples").showModal();
 }
 
 // Muita gente escolhe a roupa à noite, para o dia seguinte.
@@ -355,12 +410,13 @@ async function atualizarClima() {
     ).then((r) => r.json());
     const t = Math.round(clima?.current?.temperature_2m);
     const chuva = clima?.daily?.precipitation_probability_max?.[0] ?? 0;
-    const caixa = $("clima-caixa");
-    caixa.replaceChildren(
+    // replaceChildren transforma null no texto "null": só entra o que existe.
+    const partes = [
       elemento("strong", { texto: `${t}°C` }),
       elemento("span", { texto: `em ${lugar.name}` }),
-      chuva >= 40 ? elemento("span", { texto: `· ${chuva}% de chuva` }) : null,
-    );
+    ];
+    if (chuva >= 40) partes.push(elemento("span", { texto: `· ${chuva}% de chuva` }));
+    $("clima-caixa").replaceChildren(...partes);
   } catch {
     $("clima-texto").textContent = "Não consegui buscar a previsão agora";
   }
@@ -616,9 +672,10 @@ async function carregarPecas(reiniciar = false) {
   let consulta = sb.from("vesty_pecas").select("*", { count: "exact" });
   if (estado.categoria) consulta = consulta.eq("categoria", estado.categoria);
   if (estado.disponibilidade) consulta = consulta.eq("estado", estado.disponibilidade);
+  // O banco guarda uma versão sem acento; normalizamos o que ela digitou para
+  // que "calca", "calça" e "CALÇA" encontrem a mesma peça.
   if (estado.busca) {
-    const t = `%${estado.busca}%`;
-    consulta = consulta.or(`nome.ilike.${t},marca.ilike.${t},cor.ilike.${t}`);
+    consulta = consulta.ilike("busca", `%${semAcento(estado.busca)}%`);
   }
 
   const de = estado.pagina * POR_PAGINA;
@@ -709,11 +766,37 @@ function preencherSelects(selCategoria, selSub) {
 let ocasioesPeca = [];
 let climasPeca = [];
 
+// A cliente não deveria digitar o nome de quinze peças seguidas: ele sai do que
+// ela já escolheu. Se ela escrever o próprio nome, paramos de mexer.
+let nomeEditadoAMao = false;
+
+function sugerirNome() {
+  if (nomeEditadoAMao) return;
+  const form = $("form-peca");
+  const tipo = estado.rotulos[form.subcategoria.value] || "";
+  if (!tipo) return;
+  // A lista é plural ("Camisas"); no nome da peça o singular soa natural.
+  const singular = tipo.replace(/ões$/i, "ão").replace(/is$/i, "l").replace(/s$/i, "");
+  const cor = form.cor.value.trim();
+  form.nome.value = cor ? `${singular} ${cor.toLowerCase()}` : singular;
+}
+
 function prepararFormularioPeca() {
   preencherSelects($("peca-categoria"), $("peca-subcategoria"));
   preencherSelects($("loja-categoria"), $("loja-subcategoria"));
   $("peca-estado").replaceChildren(...ESTADOS.map(([v, t]) => new Option(t, v)));
   desenharChipsPeca();
+
+  const form = $("form-peca");
+  form.nome.addEventListener("input", () => {
+    nomeEditadoAMao = form.nome.value.trim() !== "";
+  });
+  for (const campo of [$("peca-subcategoria"), form.cor]) {
+    campo.addEventListener("input", sugerirNome);
+    campo.addEventListener("change", sugerirNome);
+  }
+  // A troca de categoria repovoa as subcategorias; sugerimos depois disso.
+  $("peca-categoria").addEventListener("change", () => setTimeout(sugerirNome, 0));
 }
 
 function desenharChipsPeca() {
@@ -727,23 +810,28 @@ function desenharChipsPeca() {
   }, true);
 }
 
-function abrirPeca(peca = null) {
+function abrirPeca(peca = null, opcoes = {}) {
   estado.editando = peca;
   estado.fotoPendente = null;
+  nomeEditadoAMao = false;
   const form = $("form-peca");
   form.reset();
   alerta("peca-alerta", "");
 
+  if (!peca) contadorDaSessao = opcoes.manterCategoria ? contadorDaSessao : 0;
   $("peca-titulo").textContent = peca ? "Detalhes da peça" : "Nova peça";
   $("excluir-peca").hidden = !peca;
   $("peca-foto").hidden = true;
   $("peca-foto").removeAttribute("src");
   $("peca-instrucao").hidden = false;
+  // Detalhes opcionais começam recolhidos em peça nova e abertos ao revisar.
+  $("mais-detalhes").open = Boolean(peca);
 
   ocasioesPeca = peca?.ocasioes ? [...peca.ocasioes] : [];
   climasPeca = peca?.clima ? [...peca.clima] : [];
 
   if (peca) {
+    nomeEditadoAMao = true; // nunca sobrescrever o nome que ela já deu
     form.nome.value = peca.nome;
     $("peca-categoria").value = peca.categoria;
     $("peca-categoria").onchange();
@@ -760,10 +848,18 @@ function abrirPeca(peca = null) {
       $("peca-instrucao").hidden = true;
       pintarFoto($("peca-foto"), peca.foto_path);
     }
+  } else if (opcoes.manterCategoria) {
+    // Quem está cadastrando várias blusas seguidas não quer reescolher a categoria.
+    $("peca-categoria").value = opcoes.manterCategoria;
+    $("peca-categoria").onchange();
+    sugerirNome();
+  } else {
+    sugerirNome();
   }
 
   desenharChipsPeca();
-  $("dialogo-peca").showModal();
+  if (!$("dialogo-peca").open) $("dialogo-peca").showModal();
+  $("dialogo-peca").querySelector(".folha").scrollTop = 0;
 }
 
 $("tirar-foto").onclick = () => $("arquivo-camera").click();
@@ -827,17 +923,35 @@ $("form-peca").onsubmit = async (e) => {
     } else {
       const { error } = await sb.from("vesty_pecas").insert(valores);
       if (error) throw new Error(error.message);
-      recado("Peça guardada no seu closet.");
+      recado(continuar ? "Guardada. Vamos para a próxima." : "Peça guardada no seu closet.");
     }
 
-    $("dialogo-peca").close();
+    if (continuar) {
+      // Cadastro em sequência: mantém a categoria escolhida e já pede a foto
+      // seguinte, para não precisar reabrir o formulário a cada peça.
+      const categoria = form.categoria.value;
+      abrirPeca(null, { manterCategoria: categoria });
+      contadorDaSessao += 1;
+      $("peca-titulo").textContent = `Nova peça · ${contadorDaSessao} nesta sessão`;
+    } else {
+      $("dialogo-peca").close();
+    }
     if (estado.aba === "closet") carregarPecas(true);
     else carregarResumo();
   } catch (erro) {
     alerta("peca-alerta", erro.message);
   } finally {
     botao.disabled = false;
+    continuar = false;
   }
+};
+
+let continuar = false;
+let contadorDaSessao = 0;
+
+$("salvar-e-outra").onclick = () => {
+  continuar = true;
+  $("form-peca").requestSubmit();
 };
 
 $("excluir-peca").onclick = async () => {
@@ -1701,6 +1815,59 @@ async function carregarEstatisticas() {
     }));
   }
 }
+
+/* Canal direto com quem construiu o app. Num piloto com amigas, é o que
+   transforma "achei estranho" em algo que dá para consertar. */
+$("enviar-sugestao").onclick = () => {
+  $("simples-titulo").textContent = "Mandar minha opinião";
+  const form = elemento("form", {});
+  form.innerHTML = `
+    <label>Sobre o quê?<select name="assunto"></select></label>
+    <label>Conta para a gente
+      <textarea name="texto" rows="5" maxlength="1500" required
+        placeholder="Ex.: cadastrar peça deu trabalho; senti falta de..."></textarea>
+    </label>
+    <small>Sua mensagem vai junto com a tela em que você estava. Nenhuma foto é enviada.</small>
+    <button type="submit" class="largo" style="margin-top:16px">Enviar</button>
+  `;
+  form.assunto.replaceChildren(
+    new Option("Algo não funcionou", "problema"),
+    new Option("Ficou difícil de usar", "dificuldade"),
+    new Option("Senti falta de alguma coisa", "faltou"),
+    new Option("As sugestões de look", "sugestoes"),
+    new Option("Elogio ou outra coisa", "outro"),
+  );
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const botao = form.querySelector("button");
+    botao.disabled = true;
+    try {
+      const { data: sessao } = await sb.auth.getUser();
+      const { error } = await sb.from("vesty_eventos").insert({
+        dona_id: sessao.user.id,
+        tipo: "opiniao",
+        dados: {
+          assunto: form.assunto.value,
+          texto: form.texto.value.trim(),
+          aba: estado.aba,
+          pecas: estado.total,
+          tela: `${window.innerWidth}x${window.innerHeight}`,
+        },
+      });
+      if (error) throw new Error(error.message);
+      $("dialogo-simples").close();
+      recado("Recebido. Obrigada de verdade!");
+    } catch (erro) {
+      recado(erro.message, "erro");
+    } finally {
+      botao.disabled = false;
+    }
+  };
+
+  $("simples-corpo").replaceChildren(form);
+  $("dialogo-simples").showModal();
+};
 
 $("exportar").onclick = async () => {
   const { data, error } = await sb.rpc("vesty_exportar");

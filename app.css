@@ -302,6 +302,18 @@ input[type="file"] { display: none; }
   border-top: 1px solid var(--linha); margin-top: 16px;
 }
 
+/* Campos opcionais do cadastro: recolhidos por padrão. */
+details#mais-detalhes { margin: 6px 0 4px; border: 1.5px solid var(--linha); border-radius: 13px; background: var(--papel); }
+details#mais-detalhes summary {
+  padding: 13px 16px; cursor: pointer; font-size: 14px; font-weight: 600;
+  color: var(--ameixa); list-style: none; display: flex; align-items: center; justify-content: space-between;
+}
+details#mais-detalhes summary::-webkit-details-marker { display: none; }
+details#mais-detalhes summary::after { content: "+"; font-size: 19px; color: var(--rosa); font-weight: 400; }
+details#mais-detalhes[open] summary::after { content: "−"; }
+details#mais-detalhes[open] summary { border-bottom: 1px solid var(--linha); }
+.detalhes-corpo { padding: 15px 16px 4px; }
+
 @media (min-width: 720px) {
   h1 { font-size: 33px; }
   .tela { padding: 28px 24px 34px; }
