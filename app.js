@@ -186,12 +186,39 @@ async function pintarFoto(img, caminho) {
 
 let modoCadastro = false;
 
+const CORES = ["Rosa", "Vermelho", "Laranja", "Amarelo", "Verde", "Azul", "Roxo", "Marrom", "Cinza", "Preto", "Branco", "Bege"];
+const TIPOS_ROUPA = ["Camisetas", "Blusas", "Camisas", "Vestidos", "Calças", "Shorts", "Saias", "Jaquetas", "Casacos", "Suéteres", "Leggings", "Jeans"];
+const ESTILOS = ["Casual", "Clássico", "Esportivo", "Elegante", "Boho", "Romântico", "Gótico", "Minimalista", "Vintage", "Moderno", "Feminino", "Masculino"];
+
+function renderizarChecklists() {
+  $("cores-checklist").replaceChildren();
+  CORES.forEach(cor => {
+    const chip = elemento("button", { type: "button", class: "chip-toggle" });
+    chip.textContent = cor;
+    chip.onclick = (e) => { e.preventDefault(); chip.classList.toggle("ativo"); };
+    $("cores-checklist").append(chip);
+  });
+
+  $("tipos-checklist").replaceChildren();
+  TIPOS_ROUPA.forEach(tipo => {
+    const chip = elemento("button", { type: "button", class: "chip-toggle" });
+    chip.textContent = tipo;
+    chip.onclick = (e) => { e.preventDefault(); chip.classList.toggle("ativo"); };
+    $("tipos-checklist").append(chip);
+  });
+
+  $("estilos-checklist").replaceChildren();
+  ESTILOS.forEach(estilo => {
+    const chip = elemento("button", { type: "button", class: "chip-toggle" });
+    chip.textContent = estilo;
+    chip.onclick = (e) => { e.preventDefault(); chip.classList.toggle("ativo"); };
+    $("estilos-checklist").append(chip);
+  });
+}
+
 $("alternar-modo").onclick = () => {
   modoCadastro = !modoCadastro;
-  $("campo-nome").hidden = !modoCadastro;
-  $("campo-sexo").hidden = !modoCadastro;
-  $("campo-idade").hidden = !modoCadastro;
-  $("campo-cidade").hidden = !modoCadastro;
+  $("secao-basica").hidden = !modoCadastro;
   $("nome").required = modoCadastro;
   $("sexo").required = modoCadastro;
   $("idade").required = modoCadastro;
@@ -205,6 +232,11 @@ $("alternar-modo").onclick = () => {
   $("esqueci-senha").hidden = modoCadastro;
   $("senha").autocomplete = modoCadastro ? "new-password" : "current-password";
   alerta("entrada-alerta", "");
+
+  if (modoCadastro) {
+    renderizarChecklists();
+    setTimeout(() => $("nome").focus(), 100);
+  }
 };
 
 $("toggle-senha").onclick = () => {
@@ -227,6 +259,15 @@ $("form-entrada").onsubmit = async (e) => {
   const password = $("senha").value;
   try {
     if (modoCadastro) {
+      if (!$("nome").value.trim()) { alerta("entrada-alerta", "Informe seu nome"); botao.disabled = false; return; }
+      if (!$("sexo").value) { alerta("entrada-alerta", "Selecione seu gênero"); botao.disabled = false; return; }
+      if (!$("idade").value) { alerta("entrada-alerta", "Informe sua idade"); botao.disabled = false; return; }
+      if (!$("cidade").value.trim()) { alerta("entrada-alerta", "Informe sua cidade"); botao.disabled = false; return; }
+
+      const coresAtivas = Array.from($("cores-checklist").querySelectorAll(".ativo")).map(el => el.textContent).join(",");
+      const tiposAtivos = Array.from($("tipos-checklist").querySelectorAll(".ativo")).map(el => el.textContent).join(",");
+      const estilosAtivos = Array.from($("estilos-checklist").querySelectorAll(".ativo")).map(el => el.textContent).join(",");
+
       const { error } = await sb.auth.signUp({
         email,
         password,
@@ -234,8 +275,11 @@ $("form-entrada").onsubmit = async (e) => {
           data: {
             nome: $("nome").value.trim(),
             sexo: $("sexo").value,
-            idade: $("idade").value ? parseInt($("idade").value) : null,
+            idade: parseInt($("idade").value),
             cidade: $("cidade").value.trim(),
+            cores_favoritas: coresAtivas,
+            tipos_roupa: tiposAtivos,
+            estilos: estilosAtivos,
           }
         },
       });
