@@ -372,9 +372,11 @@ async function carregarTaxonomia() {
   const { data } = await sb.from("vesty_subcategorias").select("*").order("ordem");
   estado.subcategorias = {};
   estado.rotulos = {};
+  estado.singulares = {};
   for (const linha of data || []) {
     (estado.subcategorias[linha.categoria] ||= []).push([linha.slug, linha.rotulo]);
     estado.rotulos[linha.slug] = linha.rotulo;
+    estado.singulares[linha.slug] = linha.rotulo_singular || linha.rotulo;
   }
 }
 
@@ -773,10 +775,10 @@ let nomeEditadoAMao = false;
 function sugerirNome() {
   if (nomeEditadoAMao) return;
   const form = $("form-peca");
-  const tipo = estado.rotulos[form.subcategoria.value] || "";
-  if (!tipo) return;
-  // A lista é plural ("Camisas"); no nome da peça o singular soa natural.
-  const singular = tipo.replace(/ões$/i, "ão").replace(/is$/i, "l").replace(/s$/i, "");
+  // O singular vem do banco: regra automática erra em português — "Jeans"
+  // viraria "Jean" e "Tênis" viraria "Tênl".
+  const singular = estado.singulares[form.subcategoria.value];
+  if (!singular) return;
   const cor = form.cor.value.trim();
   form.nome.value = cor ? `${singular} ${cor.toLowerCase()}` : singular;
 }
@@ -1514,7 +1516,7 @@ async function salvarDesejo(decisao, form) {
     if (decisao === "comprei") {
       const { data: nova, error } = await sb.from("vesty_pecas").insert({
         dona_id: dona,
-        nome: `${estado.rotulos[form.subcategoria.value] || form.subcategoria.value} ${form.cor.value.trim()}`.trim(),
+        nome: `${estado.singulares[form.subcategoria.value] || form.subcategoria.value} ${form.cor.value.trim().toLowerCase()}`.trim(),
         categoria: form.categoria.value,
         subcategoria: form.subcategoria.value,
         cor: form.cor.value.trim(),
