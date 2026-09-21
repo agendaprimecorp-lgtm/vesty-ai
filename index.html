@@ -35,13 +35,17 @@
         <input id="email" type="email" required maxlength="254" autocomplete="username" placeholder="voce@exemplo.com">
       </label>
       <label>Senha
-        <input id="senha" type="password" required minlength="8" maxlength="128" autocomplete="current-password" placeholder="Mínimo 8 caracteres">
+        <div class="campo-senha">
+          <input id="senha" type="password" required minlength="8" maxlength="128" autocomplete="current-password" placeholder="Mínimo 8 caracteres">
+          <button type="button" id="toggle-senha" class="icone-senha" aria-label="Mostrar/ocultar senha">👁</button>
+        </div>
       </label>
       <p id="entrada-alerta" class="alerta" hidden role="alert"></p>
       <button type="submit" id="entrada-enviar" class="largo">Entrar</button>
     </form>
 
-    <div class="center" style="margin-top:14px">
+    <div class="links-entrada">
+      <button type="button" class="discreto" id="esqueci-senha" hidden>Esqueci minha senha</button>
       <button type="button" class="discreto" id="alternar-modo">Ainda não tenho conta</button>
     </div>
   </div>

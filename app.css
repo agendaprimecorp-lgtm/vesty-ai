@@ -106,6 +106,32 @@ small { display: block; color: var(--suave); font-size: 12.5px; font-weight: 400
   padding: 11px 14px; font-size: 13px; margin-top: 16px;
 }
 
+/* Campo de senha com toggle */
+.campo-senha {
+  position: relative; display: flex; align-items: center;
+}
+.campo-senha input {
+  flex: 1; margin: 0; padding-right: 44px;
+}
+.icone-senha {
+  position: absolute; right: 12px; background: none; border: none; cursor: pointer;
+  font-size: 18px; padding: 8px; color: var(--suave); min-width: auto; min-height: auto;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+}
+.icone-senha:active { opacity: .7; }
+
+/* Links da entrada */
+.links-entrada {
+  margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+}
+.links-entrada button { font-size: 13px; padding: 6px 12px; }
+
+@media (max-width: 460px) {
+  #entrada { padding: 20px 16px; }
+  #entrada .marca h1 { font-size: 32px; }
+  .cartao { padding: 16px; }
+}
+
 /* ---------- Barra inferior ---------- */
 
 .navegacao {

@@ -196,8 +196,20 @@ $("alternar-modo").onclick = () => {
     : "Entre para ver seu guarda-roupa.";
   $("entrada-enviar").textContent = modoCadastro ? "Criar minha conta" : "Entrar";
   $("alternar-modo").textContent = modoCadastro ? "Já tenho conta" : "Ainda não tenho conta";
+  $("esqueci-senha").hidden = modoCadastro;
   $("senha").autocomplete = modoCadastro ? "new-password" : "current-password";
   alerta("entrada-alerta", "");
+};
+
+$("toggle-senha").onclick = () => {
+  const input = $("senha");
+  input.type = input.type === "password" ? "text" : "password";
+};
+
+$("esqueci-senha").onclick = () => {
+  const email = prompt("Informe o e-mail da sua conta:");
+  if (!email) return;
+  alerta("entrada-alerta", "Verifique sua caixa de entrada. Enviamos um link para redefinir a senha.");
 };
 
 $("form-entrada").onsubmit = async (e) => {
