@@ -28,8 +28,23 @@
     <p class="muted" id="entrada-texto" style="margin-bottom:18px">Entre para ver seu guarda-roupa.</p>
 
     <form id="form-entrada">
-      <label id="campo-nome" hidden>Como podemos te chamar?
-        <input id="nome" maxlength="120" autocomplete="name" placeholder="Seu nome">
+      <label id="campo-nome" hidden>Seu nome completo
+        <input id="nome" maxlength="120" autocomplete="name" placeholder="Ex: Maria Silva">
+      </label>
+      <label id="campo-sexo" hidden>Qual é seu gênero?
+        <select id="sexo">
+          <option value="">Selecione...</option>
+          <option value="feminino">Feminino</option>
+          <option value="masculino">Masculino</option>
+          <option value="indiferente">Indiferente/Indefinido</option>
+          <option value="nao-informar">Prefiro não informar</option>
+        </select>
+      </label>
+      <label id="campo-idade" hidden>Qual é sua idade?
+        <input id="idade" type="number" min="13" max="120" autocomplete="off" placeholder="Ex: 28">
+      </label>
+      <label id="campo-cidade" hidden>Em qual cidade você está?
+        <input id="cidade" maxlength="100" autocomplete="address-level2" placeholder="Ex: São Paulo">
       </label>
       <label>E-mail
         <input id="email" type="email" required maxlength="254" autocomplete="username" placeholder="voce@exemplo.com">

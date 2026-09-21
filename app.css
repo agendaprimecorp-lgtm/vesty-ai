@@ -130,6 +130,7 @@ small { display: block; color: var(--suave); font-size: 12.5px; font-weight: 400
   #entrada { padding: 20px 16px; }
   #entrada .marca h1 { font-size: 32px; }
   .cartao { padding: 16px; }
+  label { margin-bottom: 12px; }
 }
 
 /* ---------- Barra inferior ---------- */

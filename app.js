@@ -189,7 +189,13 @@ let modoCadastro = false;
 $("alternar-modo").onclick = () => {
   modoCadastro = !modoCadastro;
   $("campo-nome").hidden = !modoCadastro;
+  $("campo-sexo").hidden = !modoCadastro;
+  $("campo-idade").hidden = !modoCadastro;
+  $("campo-cidade").hidden = !modoCadastro;
   $("nome").required = modoCadastro;
+  $("sexo").required = modoCadastro;
+  $("idade").required = modoCadastro;
+  $("cidade").required = modoCadastro;
   $("entrada-titulo").textContent = modoCadastro ? "Seu estilo começa aqui" : "Bem-vinda de volta";
   $("entrada-texto").textContent = modoCadastro
     ? "Crie sua conta para montar seu guarda-roupa."
@@ -224,7 +230,14 @@ $("form-entrada").onsubmit = async (e) => {
       const { error } = await sb.auth.signUp({
         email,
         password,
-        options: { data: { nome: $("nome").value.trim() } },
+        options: {
+          data: {
+            nome: $("nome").value.trim(),
+            sexo: $("sexo").value,
+            idade: $("idade").value ? parseInt($("idade").value) : null,
+            cidade: $("cidade").value.trim(),
+          }
+        },
       });
       if (error) throw error;
       const entrou = await sb.auth.signInWithPassword({ email, password });
